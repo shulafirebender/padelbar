@@ -8,9 +8,9 @@ from routes.categories import categories_bp
 # Load .env if present
 load_dotenv()
 
-
 def create_app():
-    app = Flask(__name__, static_folder=None)
+    # Указываем static_folder на dist
+    app = Flask(__name__, static_folder="dist", static_url_path="/")
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Config
@@ -20,22 +20,30 @@ def create_app():
 
     # Init extensions
     db.init_app(app)
-    CORS(app, resources={r"/*": {"origins": "*"}})
 
     # Register blueprints
     from routes.menu import menu_bp
     from routes.admin import admin_bp
     app.register_blueprint(menu_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(categories_bp) 
+    app.register_blueprint(categories_bp)
 
     # Basic healthcheck
     @app.route('/health')
     def health():
         return {'status': 'ok'}
 
-    return app
+    # Отдача React статики
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_react(path):
+        # Если путь существует в dist — отдать файл
+        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_from_directory(app.static_folder, path)
+        # Иначе отдаём index.html
+        return send_from_directory(app.static_folder, 'index.html')
 
+    return app
 
 if __name__ == '__main__':
     app = create_app()
