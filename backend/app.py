@@ -14,7 +14,7 @@ def create_app():
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Config
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/database.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
